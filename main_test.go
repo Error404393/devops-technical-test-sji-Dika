@@ -18,7 +18,7 @@ func TestHandler(t *testing.T) {
 	handler(rec, req)
 
 	got := rec.Body.String()
-	want := "Hello, DevOps! version=test\n"
+	want := "Hello, DevOps! version=FAIL\n"
 
 	if got != want {
 		t.Fatalf("got %q, want %q", got, want)
