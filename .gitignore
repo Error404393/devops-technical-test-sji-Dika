@@ -1,0 +1,12 @@
+# Go build artifacts
+*.exe
+
+# Local release binaries
+releases/
+
+# Jenkins local data
+jenkins_home/
+
+# OS files
+.DS_Store
+Thumbs.db
