@@ -75,7 +75,7 @@ pipeline {
         stage('Deploy'){
             steps{
                 sh '''
-                    docker cp app-release /workspace/releases/app-release
+                    cp app-release /workspace/releases/app-release
                     docker stop devops-app
                     mv /workspace/releases/app-release /workspace/releases/app-1.0.0
                     docker start devops-app
