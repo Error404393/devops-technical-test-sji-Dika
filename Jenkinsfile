@@ -75,11 +75,8 @@ pipeline {
         stage('Deploy'){
             steps{
                 sh '''
-                    docker cp app-release devops-app:/tmp/app-release
-                    docker stop devops-app
-                    docker exec devops-app sh -c 'cat /tmp/app-release > /app/app && chmod +x /app/app'
-                    docker exec devops-app rm -f /tmp/app-release
-                    docker start devops-app 
+                    cp app-release /workspace/releases/app-release
+                    docker restart devops-app
                 '''
             }
         }
