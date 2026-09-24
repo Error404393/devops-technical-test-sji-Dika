@@ -10,7 +10,7 @@ func TestHandler(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	oldVersion := version
-	version := "test"
+	version = "test"
 	defer func() {
 		version = oldVersion
 	}()
@@ -21,6 +21,6 @@ func TestHandler(t *testing.T) {
 	want := "Hello, DevOps! version=test\n"
 
 	if got != want {
-		t.Fatal("got %q, want %q", got, want)
+		t.Fatalf("got %q, want %q", got, want)
 	}
 }
