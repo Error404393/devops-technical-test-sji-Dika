@@ -13,9 +13,12 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Test'){
-            steps{
-                sh 'go test ./...'
+        stage('Test') {
+            steps {
+                sh '''
+                    set -e
+                    go test ./...
+                '''
             }
         }
         stage('Prepare Version'){
@@ -72,13 +75,58 @@ pipeline {
                 }
             }
         }
-        stage('Deploy'){
-            steps{
+        stage('Deploy') {
+            steps {
                 sh '''
-                    cp app-release /workspace/releases/app-release
+                    set -e
+
+                    TARGET="/workspace/releases/app-1.0.0"
+                    NEW="/workspace/releases/app-release"
+                    BACKUP="/workspace/releases/app-rollback"
+
+                    echo "Creating backup of current binary..."
+                    cp "$TARGET" "$BACKUP"
+
+                    rollback() {
+                        trap - ERR
+                        echo "Deployment failed. Rolling back..."
+
+                        docker stop devops-app >/dev/null 2>&1 || true
+                        cp "$BACKUP" "$TARGET"
+                        docker start devops-app
+
+                        echo "Rollback completed."
+                    }
+
+                    trap rollback ERR
+
+                    echo "Stopping current application..."
                     docker stop devops-app
-                    mv /workspace/releases/app-release /workspace/releases/app-1.0.0
+
+                    echo "Replacing application binary..."
+                    cp "$NEW" "$TARGET"
+                    rm -f "$NEW"
+
+                    echo "Starting application..."
                     docker start devops-app
+
+                    sleep 2
+
+                    echo "Checking deployed version..."
+                    RESPONSE=$(wget -qO- http://host.docker.internal:8080)
+
+                    echo "Application response:"
+                    echo "$RESPONSE"
+
+                    echo "$RESPONSE" | grep "version=${VERSION}"
+
+                    echo "Deployment verification successful."
+
+                    rm -f "$BACKUP"
+
+                    trap - ERR
+
+                    echo "Deployment completed successfully."
                 '''
             }
         }
